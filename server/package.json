@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "twit": "~1.1.19",
-    "stomp": "^0.1.1",
+    "diffusion": "^5.5.1",
     "nconf": "^0.7.1"
   },
   "scripts": {

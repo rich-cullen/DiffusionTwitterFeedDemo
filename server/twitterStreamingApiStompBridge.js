@@ -4,18 +4,13 @@
 
 // initialisation
 var twit = require('twit'), // https://github.com/ttezel/twit
-    stomp = require('stomp'), // https://github.com/benjaminws/stomp-js
+    diffusion = require('diffusion'),
     nconf = require('nconf'), // https://github.com/flatiron/nconf
-    stompClient,
+    session,
     twitterStream,
-    controlDestination = '/topic/twitter_stream_rate_control',
-    controlDestinationHeaders = {
-        destination: controlDestination,
-        ack: 'auto'
-    },
-    notificationsDestination = '/topic/twitter_notifications',
-    publishDestinationFull = '/topic/twitter_stream',
-    publishDestinationDelta = '/topic/twitter_stream_delta',
+    controlDestination = 'twitter_stream_rate_control',
+    notificationsDestination = 'twitter_notifications',
+    publishDestination = 'twitter_stream',
     publishIntervalId = null,
     publishIntervalMilliseconds = 200, // default to max rate of 5 tweets per second (configurable from the UI)
     tweetQueue = [],
@@ -47,14 +42,6 @@ var twitterConfig = {
         access_token_secret: nconf.get('TWITTER_ACCESS_TOKEN_SECRET')
     };
 
-var activeMqConfig = {
-        host: nconf.get('ACTIVEMQ_HOST'),
-        port: nconf.get('ACTIVEMQ_PORT'),
-        debug: nconf.get('ACTIVEMQ_DEBUG'),
-        login: nconf.get('ACTIVEMQ_USERNAME'),
-        passcode: nconf.get('ACTIVEMQ_PASSWORD'),
-    };
-
 
 // handle CTRL+C gracefully
 process.on('SIGINT', function() {
@@ -64,7 +51,7 @@ process.on('SIGINT', function() {
 
 
 // main prog
-connectToMessageBroker();
+connectToDiffusion();
 connectToTwitterPublicStream();
 
 // rate test
@@ -88,25 +75,31 @@ function displayDebugStats() {
 publishIntervalId = setInterval(publishTweet, publishIntervalMilliseconds);
 
 // function definitions
-function connectToMessageBroker() {
-    console.log('Connecting to message broker...');
+function connectToDiffusion() {
+    console.log('Connecting to Diffusion...');
 
-    stompClient = new stomp.Stomp(activeMqConfig);
+    diffusion.connect({
+        host: 'localhost',
+        port: 8080,
+        secure: false,
+        principal: '',
+        credentials: ''
+    }).then(onDiffusionConnect, onDiffusionConnectError);
+}
 
-    stompClient.on('error', function (error_frame) {
-        console.log(error_frame.body);
-        tidyUp();
-        process.exit(0);
-    });
+function onDiffusionConnect(diffusionSession) {
+    console.log('Connected to Diffusion');
+    session = diffusionSession;
+    session.security.changePrincipal('admin', 'password'); // TODO: authenticating as admin just for demo purposes!!!
+    session.topics.add(notificationsDestination);
+    session.topics.add(publishDestination);
+    session.subscribe(controlDestination).transform(JSON.parse).on('update', onRateControlMessage);
+}
 
-    stompClient.on('message', onStompMessage);
-
-    stompClient.on('connected', function () {
-        console.log('Connected to message broker');
-        stompClient.subscribe(controlDestinationHeaders);
-    });
-
-    stompClient.connect();
+function onDiffusionConnectError(error) {
+    console.log(error);
+    tidyUp();
+    process.exit(0);
 }
 
 function connectToTwitterPublicStream() {
@@ -132,31 +125,25 @@ function publishTweet() {
         return;
     }
 
-    var stompMessageFull = constructStompTweetMessage(tweet, publishDestinationFull);
-    var stompMessageDelta = constructStompTweetMessage(tweet, publishDestinationDelta);
-    stompClient.send(stompMessageFull, false);
-    stompClient.send(stompMessageDelta, false);
-
+    session.topics.update(publishDestination, JSON.stringify(tidyTweet(tweet)));
     publishTweetCompletes++; // rate test
     publishTotal++; // rate test
 }
 
-function constructStompTweetMessage(tweet, destination) {
+function tidyTweet(tweet) {
     return {
-        destination: destination,
-        persistent: false,
-        body: tweet.text,
-        t_source: tweet.source,
-        t_user_id_str: tweet.user ? tweet.user.id_str : null,
-        t_user_screen_name: tweet.user ? tweet.user.screen_name : null,
-        t_user_profile_image_url: tweet.user ? tweet.user.profile_image_url : null,
-        t_user_geo_enabled: tweet.user ? tweet.user.geo_enabled : null,
-        t_place_country_code: tweet.place ? tweet.place.country_code : null,
-        t_place_full_name: tweet.place ? tweet.place.full_name : null,
-        t_favorited: tweet.favorited,
-        t_retweeted: tweet.retweeted,
-        t_possibly_sensitive: tweet.possibly_sensitive,
-        t_filter_level: tweet.filter_level
+        text: tweet.text,
+        source: tweet.source,
+        user_id_str: tweet.user ? tweet.user.id_str : null,
+        user_screen_name: tweet.user ? tweet.user.screen_name : null,
+        user_profile_image_url: tweet.user ? tweet.user.profile_image_url : null,
+        user_geo_enabled: tweet.user ? tweet.user.geo_enabled : null,
+        place_country_code: tweet.place ? tweet.place.country_code : null,
+        place_full_name: tweet.place ? tweet.place.full_name : null,
+        favorited: tweet.favorited,
+        retweeted: tweet.retweeted,
+        possibly_sensitive: tweet.possibly_sensitive,
+        filter_level: tweet.filter_level
     }
 }
 
@@ -172,37 +159,29 @@ function onTweet(tweet) {
     tweetQueue.push(tweet);
 }
 
-function onStompMessage(message) {
-    if (message.headers.destination == controlDestination) {
+function onRateControlMessage(message) {
 
-        // if rate is valid then update publication rate // TODO: add defensive coding to prevent failure in the event of poorly formatted messages being received
-        var newPublishIntervalMilliseconds = 0,
-            messageBody = JSON.parse(message.body),
-            tweetsPerSecondMaxRate = parseInt(messageBody.maxTweetRate, 10);
+    // if rate is valid then update publication rate // TODO: add defensive coding to prevent failure in the event of poorly formatted messages being received
+    var newPublishIntervalMilliseconds = 0,
+        tweetsPerSecondMaxRate = parseInt(message.maxTweetRate, 10);
 
-        if (typeof tweetsPerSecondMaxRate === 'number' && tweetsPerSecondMaxRate > 0 && tweetsPerSecondMaxRate <= 50) {
-            newPublishIntervalMilliseconds = Math.floor(1000 / tweetsPerSecondMaxRate);
-            clearInterval(publishIntervalId);
-            publishIntervalId = setInterval(publishTweet, newPublishIntervalMilliseconds);
+    if (typeof tweetsPerSecondMaxRate === 'number' && tweetsPerSecondMaxRate > 0 && tweetsPerSecondMaxRate <= 50) {
+        newPublishIntervalMilliseconds = Math.floor(1000 / tweetsPerSecondMaxRate);
+        clearInterval(publishIntervalId);
+        publishIntervalId = setInterval(publishTweet, newPublishIntervalMilliseconds);
 
-            // broadcast max rate change notification to connected clients
-            var notification = {
-                newMaxRate: tweetsPerSecondMaxRate,
-                rateChangeUserId: messageBody.userId,
-                broadcastMessage: 'Max tweet publication rate set at ' + tweetsPerSecondMaxRate + ' per second'
-            };
+        // broadcast max rate change notification to connected clients
+        var notification = {
+            newMaxRate: tweetsPerSecondMaxRate,
+            rateChangeUserId: message.userId,
+            broadcastMessage: 'Max tweet publication rate set at ' + tweetsPerSecondMaxRate + ' per second'
+        };
 
-            stompClient.send({
-                destination: notificationsDestination,
-                body: JSON.stringify(notification),
-                persistent: false
-            }, false);
-
-            console.log(notification.broadcastMessage + ' by user ' + notification.rateChangeUserId);
-        }
-        else {
-            console.log('Invalid max tweet rate request received');
-        }
+        session.topics.update(notificationsDestination, JSON.stringify(notification));
+        console.log(notification.broadcastMessage + ' by user ' + notification.rateChangeUserId);
+    }
+    else {
+        console.log('Invalid max tweet rate request received');
     }
 }
 

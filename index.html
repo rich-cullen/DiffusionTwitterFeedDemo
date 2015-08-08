@@ -111,39 +111,6 @@
         <div class="col-md-7" id="countryTweetsBarChartContainer"><!-- experiment to handle re-render issue -->
           <canvas id="countryTweetsBarChart" width="500" height="300"></canvas>
         </div>
-        <div class="col-md-2">
-          <div class="panel panel-default">
-            <div class="panel-heading text-center">
-              Delta Delivery
-            </div>
-            <div class="panel-body">
-              <div class="btn-group btn-group-sm btn-group-justified center-block" data-toggle="buttons" role="group" aria-label="...">
-                <label class="btn btn-primary disabled active">
-                  <input type="radio" name="deltaDelivery" value="off" checked><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>&nbsp;&nbsp;Off
-                </label>
-                <label class="btn btn-primary disabled">
-                  <input type="radio" name="deltaDelivery" value="on"><span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>&nbsp;&nbsp;On
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel panel-default">
-            <div class="panel-heading text-center">
-              Network Profiler
-            </div>
-            <div class="panel-body">
-              <div class="btn-group btn-group-sm center-block" role="group" aria-label="...">
-                <button id="btnWebSocketProfilerStart" type="button" class="btn" disabled="disabled" aria-label="Left Align">
-                  <span class="glyphicon glyphicon-play-circle" aria-hidden="true"></span> Start
-                </button>
-                <button id="btnWebSocketProfilerStop" type="button" class="btn" disabled="disabled" aria-label="Left Align">
-                  <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span> Stop
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="row">
@@ -165,11 +132,7 @@
     <script src="js/Chart.js"></script>
     <script src="js/toastr.min.js"></script>
     <script src="js/json2.min.js"></script>
-    <!-- TODO: replace with Diffusion or Reappt -->
-    <script src="kaazing_client/WebSocket.js"></script>
-    <script src="kaazing_client/jms/JmsClient.js"></script>
-    <script src="js/kaazingWebSocketProfiler.js"></script>
-    <!-- TODO: end replace -->
+    <script src="diffusion_client/diffusion-js-5.5.2.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
