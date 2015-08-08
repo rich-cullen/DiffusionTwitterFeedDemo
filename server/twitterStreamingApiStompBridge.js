@@ -79,18 +79,24 @@ function connectToDiffusion() {
     console.log('Connecting to Diffusion...');
 
     diffusion.connect({
+
+        // localhost
         host: 'localhost',
         port: 8080,
+
+        // Reappt
+        //host: 'burningnotableMerry.us.reappt.io',
+        //port: 80,
+
         secure: false,
-        principal: '',
-        credentials: ''
+        principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
+        credentials: 'password'
     }).then(onDiffusionConnect, onDiffusionConnectError);
 }
 
 function onDiffusionConnect(diffusionSession) {
     console.log('Connected to Diffusion');
     session = diffusionSession;
-    session.security.changePrincipal('admin', 'password'); // TODO: authenticating as admin just for demo purposes!!!
     session.topics.add(notificationsDestination);
     session.topics.add(publishDestination);
     session.subscribe(controlDestination).transform(JSON.parse).on('update', onRateControlMessage);

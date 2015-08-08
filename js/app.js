@@ -34,7 +34,20 @@ $(function () {
         $linkBootstrapStyle = $('#linkBootstrapStyle'),
         availableStyles = ['bootstrap', 'bootstrap-theme-cosmo', 'bootstrap-theme-slate', 'bootstrap-theme-superhero', 'bootstrap-theme-cyborg'],
         currentStyle = 0,
-        userId = generateGuid();
+        userId = generateGuid(),
+        diffusionMaximumTimeoutDuration = 1000 * 60 * 10,
+        diffusionMaxAttemptInterval = 1000 * 60,
+        diffusionReconnectionStrategy = (function() {
+            var attempts = 0;
+
+            return function(start, abort) {
+                var wait = Math.min(Math.pow(2, attempts++) * 100, diffusionMaxAttemptInterval);
+                console.log('waiting for: ' + wait);
+
+                // Wait and then try to start the reconnection attempt
+                setTimeout(start, wait);
+            };
+        })();
 
     // register event handlers
     $btnStart.on('click', function (event) {
@@ -196,13 +209,30 @@ $(function () {
     function connectToDiffusion() {
 
         diffusion.connect({
+
+            // localhost
             host: 'localhost',
             port: 8080,
+
+            // Reappt
+            //host: 'burningnotableMerry.us.reappt.io',
+            //port: 80,
+
             secure: false,
-            principal: '',
-            credentials: ''
+            principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
+            credentials: 'password',
+            reconnect: {
+                timeout: diffusionMaximumTimeoutDuration,
+                strategy: diffusionReconnectionStrategy
+            }
         }).then(function(diffusionSession) {
             session = diffusionSession;
+            session.on('disconnect', function () {
+                toastr.error('Connection to Diffusion lost', 'Application error!')
+            });
+            session.on('reconnect', function () {
+                toastr.success('Connection to Diffusion successfully re-established', 'Reconnected');
+            });
             onConnection();
 
         }, function(error) {
@@ -215,13 +245,12 @@ $(function () {
         if (e.type == 'ConnectionRestoredException') {
             toastr.success('Connection to Diffusion successfully re-established', 'Reconnected');
         } else {
-            toastr.error('Exception - ' + e, 'Application error!');
+            toastr.error('Exception - ' + e.message, 'Application error!');
         }
-        console.log('EXCEPTION: ' + e);
+        console.log('EXCEPTION: ' + e.message);
     }
 
     function onConnection() {
-        session.security.changePrincipal('admin', 'password'); // TODO: authenticating as admin just for demo purposes!!!
         createMaxTweetRateTopic();
         setMaxTweetRate(5);
         $btnStart.removeAttr('disabled').addClass('btn-success');
@@ -285,10 +314,8 @@ $(function () {
         }
     }
 
-    function onNotification(diffusionMessage) {
-        console.log(diffusionMessage);
-        var notification = diffusionMessage,
-            message = notification.broadcastMessage;
+    function onNotification(notification) {
+        var message = notification.broadcastMessage;
 
         if (notification.rateChangeUserId != userId) {
             $('input[type=radio][name=maxTweetRate]').prop('checked', false).parent().removeClass('active');
