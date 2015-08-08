@@ -42,7 +42,7 @@ $(function () {
 
             return function(start, abort) {
                 var wait = Math.min(Math.pow(2, attempts++) * 100, diffusionMaxAttemptInterval);
-                console.log('waiting for: ' + wait);
+                console.log('waiting for: ' + wait + 'ms');
 
                 // Wait and then try to start the reconnection attempt
                 setTimeout(start, wait);
@@ -225,32 +225,22 @@ $(function () {
                 timeout: diffusionMaximumTimeoutDuration,
                 strategy: diffusionReconnectionStrategy
             }
-        }).then(function(diffusionSession) {
-            session = diffusionSession;
-            session.on('disconnect', function () {
-                toastr.error('Connection to Diffusion lost', 'Application error!')
-            });
-            session.on('reconnect', function () {
-                toastr.success('Connection to Diffusion successfully re-established', 'Reconnected');
-            });
-            onConnection();
+        }).then(onConnection, onError);
+    }
 
-        }, function(error) {
-            handleException(error);
+    function onError(e) {
+        toastr.error(e.message, 'Application error!');
+        console.log('ERROR: ' + e.message);
+    }
+
+    function onConnection(diffusionSession) {
+        session = diffusionSession;
+        session.on('disconnect', function () {
+            toastr.error('Connection to Diffusion lost', 'Application error!')
         });
-    }
-
-    function handleException(e) {
-        // TODO: fix this
-        if (e.type == 'ConnectionRestoredException') {
+        session.on('reconnect', function () { // TODO: this is not being called, presumably session has died and need another hook for reconnect?
             toastr.success('Connection to Diffusion successfully re-established', 'Reconnected');
-        } else {
-            toastr.error('Exception - ' + e.message, 'Application error!');
-        }
-        console.log('EXCEPTION: ' + e.message);
-    }
-
-    function onConnection() {
+        });
         createMaxTweetRateTopic();
         setMaxTweetRate(5);
         $btnStart.removeAttr('disabled').addClass('btn-success');
