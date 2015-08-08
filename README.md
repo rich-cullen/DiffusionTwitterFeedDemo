@@ -1,15 +1,15 @@
-# KAAZING Twitter Feed Demo
+# Diffusion Twitter Feed Demo
 
 This is a basic Twitter Streaming API demo. There are 2 main components :
 
 - server that runs under Node.js. The server process listens to a filtered Twitter stream via the Twitter Streaming API. At periodic intervals it republishes the most recent Tweet as a STOMP message to an instance of Apache ActiveMQ.
 
-- HTML5 web client that connects to ActiveMQ via KAAZING Gateway JMS edition v4.0.6, subscribes to the Twitter stream destination and displays various metrics in the dashboard.
+- HTML5 web client that connects to Diffusion, subscribes to the Twitter stream destination and displays various metrics in the dashboard.
 
 
 ## Running locally
 
-This demo assumes that KAAZING Gateway JMS Edition v4.0.6, Apache ActiveMQ v5.10.0 and Node.js v0.10.25 are already installed. Once they are installed and configured, execute the following steps in order to run the demo locally :
+This demo assumes that Diffusion5.5.2_01 and Node.js v0.10.25 are already installed. Once they are installed and configured, execute the following steps in order to run the demo locally :
 
 
 ### Clone the repository
@@ -17,16 +17,11 @@ This demo assumes that KAAZING Gateway JMS Edition v4.0.6, Apache ActiveMQ v5.10
 Either download the repository as a .zip file or use git...
 
 ```Shell
-git clone https://github.com/rich-cullen/KaazingTwitterFeedDemo.git
+git clone https://github.com/rich-cullen/DiffusionTwitterFeedDemo.git
 ```
 
 
-### Run ActiveMQ
-
-NB. Configuration may be required.
-
-
-### Run KAAZING Gateway JMS Edition v4.0.6
+### Run Diffusion5.5.2_01
 
 NB. Configuration may be required.
 
@@ -78,17 +73,17 @@ $ npm start
 A simple way to do this is to run a Python web server from the directory containing index.html
 
 ```Shell
-python -m SimpleHTTPServer 8080
+python -m SimpleHTTPServer 8090
 ```
 
 ### Start the HTML5 web client
 
-Browse to http://localhost:8080/index.html
+Browse to http://localhost:8090/index.html
 
 
 ### Use the UI
 
-The client should automatically connect to KAAZING Gateway and provide visual confirmation that this has been successful. The various controls will also be enabled once connected. Click Start to begin monitoring the live Twitter stream.
+The client should automatically connect to Diffusion and provide visual confirmation that this has been successful. The various controls will also be enabled once connected. Click Start to begin monitoring the live Twitter stream.
 
 ## Client Preview
 
