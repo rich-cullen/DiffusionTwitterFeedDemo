@@ -2,14 +2,14 @@
 
 This is a basic Twitter Streaming API demo. There are 2 main components :
 
-- server that runs under Node.js. The server process listens to a filtered Twitter stream via the Twitter Streaming API. At periodic intervals it republishes the most recent Tweet as a STOMP message to an instance of Apache ActiveMQ.
+- server that runs under Node.js. The server process listens to a filtered Twitter stream via the Twitter Streaming API. At periodic intervals it republishes a formatted version of the most recent Tweet to Diffusion.
 
 - HTML5 web client that connects to Diffusion, subscribes to the Twitter stream destination and displays various metrics in the dashboard.
 
 
 ## Running locally
 
-This demo assumes that Diffusion5.5.2_01 and Node.js v0.10.25 are already installed. Once they are installed and configured, execute the following steps in order to run the demo locally :
+This demo assumes that Diffusion 5.5.2 and Node.js v0.10.25 are already installed. Once they are installed and configured, execute the following steps in order to run the demo locally :
 
 
 ### Clone the repository
@@ -21,21 +21,10 @@ git clone https://github.com/rich-cullen/DiffusionTwitterFeedDemo.git
 ```
 
 
-### Run Diffusion5.5.2_01
+### Run Diffusion
 
 NB. Configuration may be required.
 
-It is assumed that the gateway will be exposing an unprotected, CORS accessible JMS service on "ws://your-domain-name-here.com:8001/jms". In order for the delta delivery functionality to work as expected it will also require the following JMS service properties configured...
-
-```xml
-<topic>
-  <name>twitter_stream_delta</name>
-  <message.delivery.strategy>delta</message.delivery.strategy>
-  <message.header.expiration>exclude</message.header.expiration>
-  <message.header.messageID>exclude</message.header.messageID>
-  <message.header.timestamp>exclude</message.header.timestamp>
-</topic>
-```
 
 ###Configure the Node.js server
 

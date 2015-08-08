@@ -213,7 +213,7 @@ $(function () {
     function handleException(e) {
         // TODO: fix this
         if (e.type == 'ConnectionRestoredException') {
-            toastr.success('Connection to KAAZING Gateway successfully re-established', 'Reconnected');
+            toastr.success('Connection to Diffusion successfully re-established', 'Reconnected');
         } else {
             toastr.error('Exception - ' + e, 'Application error!');
         }
