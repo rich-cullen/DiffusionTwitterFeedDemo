@@ -1,0 +1,14 @@
+{
+    "TWITTER_CONFIG_COMMENT" : "These Twitter Access tokens etc are registered as rich.cullen.75@gmail.com RichTwitterTestApp",
+    "TWITTER_CONSUMER_KEY" : "QgfSMDO3IZv2vVlQcc6InZE9e",
+    "TWITTER_CONSUMER_SECRET" : "61c9kk9hrSCGLCHTMHBk6ZSxizWOkf9YTGn2l1ARyWpUStEVXc",
+    "TWITTER_ACCESS_TOKEN" : "2611471040-o2kHkCPpBwyeLEyYZovtyREw2Qe3p99QVoWmYeO",
+    "TWITTER_ACCESS_TOKEN_SECRET" : "2vuf4gzpODtt7WMNwloJ4puvB1X4a8g0KjXRlUV3svx9Z",
+
+    "ACTIVEMQ_CONFIG_COMMENT" : "The following is ActiveMQ running locally listening to STOMP on port 61616",
+    "ACTIVEMQ_HOST" : "localhost",
+    "ACTIVEMQ_PORT" : 61613,
+    "ACTIVEMQ_DEBUG" : false,
+    "ACTIVEMQ_USERNAME" : "guest",
+    "ACTIVEMQ_PASSWORD" : "guest"
+}
