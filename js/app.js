@@ -7,7 +7,8 @@ $(function () {
     }
 
     // 'globals'
-    var session,
+    var useReappt = false,
+        session,
         twitterStreamTopicName = 'twitter_stream',
         twitterStreamRateControlTopicName = 'twitter_stream_rate_control',
         logTweets = false, // TODO make configurable
@@ -35,23 +36,6 @@ $(function () {
         availableStyles = ['bootstrap', 'bootstrap-theme-cosmo', 'bootstrap-theme-slate', 'bootstrap-theme-superhero', 'bootstrap-theme-cyborg'],
         currentStyle = 0,
         userId = generateGuid(),
-        diffusionConfig = {
-            // localhost
-            host: 'localhost',
-            port: 8080,
-
-            // Reappt
-            //host: 'burningnotableMerry.us.reappt.io',
-            //port: 80,
-
-            secure: false,
-            principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
-            credentials: 'password',
-            reconnect: {
-                timeout: diffusionMaximumTimeoutDuration,
-                strategy: diffusionReconnectionStrategy
-            }
-        },
         diffusionMaximumTimeoutDuration = 1000 * 60 * 10,
         diffusionMaxAttemptInterval = 1000 * 60,
         diffusionReconnectionStrategy = (function() {
@@ -64,7 +48,18 @@ $(function () {
                 // Wait and then try to start the reconnection attempt
                 setTimeout(start, wait);
             };
-        })();
+        })(),
+        diffusionConfig = {
+            host: useReappt ? 'burningnotableMerry.us.reappt.io' : 'localhost',
+            port: useReappt ? 80: 8080,
+            secure: false,
+            principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
+            credentials: 'password',
+            reconnect: {
+                timeout: diffusionMaximumTimeoutDuration,
+                strategy: diffusionReconnectionStrategy
+            }
+        };
 
     // register event handlers
     $btnStart.on('click', function (event) {

@@ -3,7 +3,8 @@
 
 
 // initialisation
-var twit = require('twit'), // https://github.com/ttezel/twit
+var useReappt = false,
+    twit = require('twit'), // https://github.com/ttezel/twit
     diffusion = require('diffusion'),
     nconf = require('nconf'), // https://github.com/flatiron/nconf
     session,
@@ -43,18 +44,12 @@ var twitterConfig = {
     };
 
 var diffusionConfig = {
-    // localhost
-    host: nconf.get('DIFFUSION_HOST'),
-    port: nconf.get('DIFFUSION_PORT'),
-
-    // Reappt
-    //host: nconf.get('REAPPT_HOST'),
-    //port: nconf.get('REAPPT_PORT'),
-
-    secure: nconf.get('DIFFUSION_SECURE'),
-    principal: nconf.get('DIFFUSION_PRINCIPAL'),
-    credentials: nconf.get('DIFFUSION_PASSWORD')
-};
+        host: useReappt ? nconf.get('REAPPT_HOST') : nconf.get('DIFFUSION_HOST'),
+        port: useReappt ? nconf.get('REAPPT_PORT') : nconf.get('DIFFUSION_PORT'),
+        secure: nconf.get('DIFFUSION_SECURE'),
+        principal: nconf.get('DIFFUSION_PRINCIPAL'),
+        credentials: nconf.get('DIFFUSION_PASSWORD')
+    };
 
 
 // handle CTRL+C gracefully
