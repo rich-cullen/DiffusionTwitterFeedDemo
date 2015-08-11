@@ -35,6 +35,23 @@ $(function () {
         availableStyles = ['bootstrap', 'bootstrap-theme-cosmo', 'bootstrap-theme-slate', 'bootstrap-theme-superhero', 'bootstrap-theme-cyborg'],
         currentStyle = 0,
         userId = generateGuid(),
+        diffusionConfig = {
+            // localhost
+            host: 'localhost',
+            port: 8080,
+
+            // Reappt
+            //host: 'burningnotableMerry.us.reappt.io',
+            //port: 80,
+
+            secure: false,
+            principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
+            credentials: 'password',
+            reconnect: {
+                timeout: diffusionMaximumTimeoutDuration,
+                strategy: diffusionReconnectionStrategy
+            }
+        },
         diffusionMaximumTimeoutDuration = 1000 * 60 * 10,
         diffusionMaxAttemptInterval = 1000 * 60,
         diffusionReconnectionStrategy = (function() {
@@ -207,25 +224,7 @@ $(function () {
     }
 
     function connectToDiffusion() {
-
-        diffusion.connect({
-
-            // localhost
-            host: 'localhost',
-            port: 8080,
-
-            // Reappt
-            //host: 'burningnotableMerry.us.reappt.io',
-            //port: 80,
-
-            secure: false,
-            principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
-            credentials: 'password',
-            reconnect: {
-                timeout: diffusionMaximumTimeoutDuration,
-                strategy: diffusionReconnectionStrategy
-            }
-        }).then(onConnection, onError);
+        diffusion.connect(diffusionConfig).then(onConnection, onError);
     }
 
     function onError(e) {

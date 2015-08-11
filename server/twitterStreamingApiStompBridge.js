@@ -42,6 +42,20 @@ var twitterConfig = {
         access_token_secret: nconf.get('TWITTER_ACCESS_TOKEN_SECRET')
     };
 
+var diffusionConfig = {
+    // localhost
+    host: nconf.get('DIFFUSION_HOST'),
+    port: nconf.get('DIFFUSION_PORT'),
+
+    // Reappt
+    //host: nconf.get('REAPPT_HOST'),
+    //port: nconf.get('REAPPT_PORT'),
+
+    secure: nconf.get('DIFFUSION_SECURE'),
+    principal: nconf.get('DIFFUSION_PRINCIPAL'),
+    credentials: nconf.get('DIFFUSION_PASSWORD')
+};
+
 
 // handle CTRL+C gracefully
 process.on('SIGINT', function() {
@@ -77,21 +91,7 @@ publishIntervalId = setInterval(publishTweet, publishIntervalMilliseconds);
 // function definitions
 function connectToDiffusion() {
     console.log('Connecting to Diffusion...');
-
-    diffusion.connect({
-
-        // localhost
-        host: 'localhost',
-        port: 8080,
-
-        // Reappt
-        //host: 'burningnotableMerry.us.reappt.io',
-        //port: 80,
-
-        secure: false,
-        principal: 'admin', // TODO: authenticating as admin just for demo purposes!!!
-        credentials: 'password'
-    }).then(onDiffusionConnect, onDiffusionConnectError);
+    diffusion.connect(diffusionConfig).then(onDiffusionConnect, onDiffusionConnectError);
 }
 
 function onDiffusionConnect(diffusionSession) {
