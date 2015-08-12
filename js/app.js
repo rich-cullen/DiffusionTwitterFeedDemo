@@ -42,10 +42,11 @@ $(function () {
             var attempts = 0;
 
             return function(start, abort) {
-                var wait = Math.min(Math.pow(2, attempts++) * 100, diffusionMaxAttemptInterval);
-                console.log('waiting for: ' + wait + 'ms');
+                //var wait = Math.min(Math.pow(2, attempts++) * 100, diffusionMaxAttemptInterval);
+                var wait = 1000; // 1 second
 
                 // Wait and then try to start the reconnection attempt
+                console.log('waiting for: ' + wait + 'ms');
                 setTimeout(start, wait);
             };
         })(),
@@ -232,7 +233,7 @@ $(function () {
         session.on('disconnect', function () {
             toastr.error('Connection to Diffusion lost', 'Application error!')
         });
-        session.on('reconnect', function () { // TODO: this is not being called, presumably session has died and need another hook for reconnect?
+        session.on('reconnect', function () {
             toastr.success('Connection to Diffusion successfully re-established', 'Reconnected');
         });
         createMaxTweetRateTopic();
